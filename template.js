@@ -34,14 +34,11 @@ exports.template = function(grunt, init, done) {
       init.prompt("google_analytics_id", "UA-XXXXXXXX-1")
     ],
     function(err, defaultProps) {
-      const basePackage = grunt.file.readJSON(
-        path.resolve(__dirname, "package.json")
+      var props = Object.assign(
+        {},
+        require("./root/package.json"),
+        defaultProps
       );
-      props.keywords = basePackage.keywords;
-      props.dependencies = basePackage.dependencies;
-      props.devDependencies = basePackage.devDependencies;
-      props.scripts = basePackage.scripts;
-
       props.repository = {
         type: "git",
         url:
@@ -51,13 +48,21 @@ exports.template = function(grunt, init, done) {
         "https://github.com/" + props.username + "/" + props.name + "/";
       props.bugs =
         "https://github.com/" + props.username + "/" + props.name + "/issues";
+
       // Files to copy (and process).
       var files = init.filesToCopy(props);
 
-      init.copyAndProcess(files, props);
+      // Actually copy (and process) files.
+      init.copyAndProcess(files, props, {
+        noProcess: ["app/images/**", "node_modules/**"]
+      });
 
       // Generate package.json file.
-      init.writePackageJSON("package.json", props);
+      init.writePackageJSON("package.json", props, function(pkg, props) {
+        pkg.license = props.license;
+        pkg.nyc = props.nyc;
+        return pkg;
+      });
 
       // All done!
       done();

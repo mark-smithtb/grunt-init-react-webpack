@@ -19,7 +19,7 @@ this template in your `~/.grunt-init/` directory. It's recommended that you
 use `git clone` to install this template into that directory as follows:
 
 ```bash
-git clone https://github.com/mark-smithtb/grunt-init-react.git ~/.grunt-init/react
+git clone https://github.com/mark-smithtb/grunt-init-react-webpack.git ~/.grunt-init/react
 ```
 
 ### Usage
