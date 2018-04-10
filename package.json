@@ -1,5 +1,5 @@
 {
-  "name": "grunt-init-react",
+  "name": "grunt-init-react-webpack",
   "version": "0.1.9",
   "description": "grunt-init template for a very basic react project.",
   "homepage": "https://github.com/mark-smithtb/grunt-init-react-webpack",
