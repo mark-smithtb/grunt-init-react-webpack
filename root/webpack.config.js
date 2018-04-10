@@ -1,79 +1,116 @@
-const webpack = require('webpack');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const packageInfo = require('./package.json');
-const devServerEntries = [
-  'webpack-dev-server/client?http://localhost:8080',
-  'webpack/hot/only-dev-server'
-];
-const webpackConfig = {
-  context: `${__dirname}/src/app`,
+/* eslint-disable */
+const path = require("path");
+const webpack = require("webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const autoprefixer = require("autoprefixer");
+const precss = require("precss");
+const node_modules_dir = path.resolve(__dirname, "node_modules");
+
+module.exports = {
+  context: __dirname + "/app",
+
   entry: {
-    'js/app.js': ['react-hot-loader/patch', ...devServerEntries, './index.js']
+    app: "./js/index.js"
   },
   output: {
-    filename: '[name]',
-    path: `${__dirname}/build/dev/${packageInfo.name}`,
-    publicPath: `http://localhost:8080/${packageInfo.name}/`
+    path: path.resolve(__dirname, "dist"),
+    filename: "./[name].js"
   },
-  devServer: {
-    hot: true,
-    historyApiFallback: {
-      index: `/${packageInfo.name}/index.html`
-    },
-    stats: {
-      colors: true
-    }
-  },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-    new CopyWebpackPlugin([
-      { from: './index.html', to: './index.html' },
-      { from: './index.html', to: './404.html' }
-    ]),
-    new webpack.DefinePlugin({
-      'process.env': {
-        // This has effect on the react lib size
-        'NODE_ENV': JSON.stringify(process.env.NODE_ENV)
-      }
-    })
-  ],
+  resolve: {},
   module: {
-    loaders: [
+    rules: [
+      // StyleSheets
+      {
+        test: /\.scss$/,
+        use: [
+          {
+            loader: "style-loader"
+          },
+          {
+            loader: "css-loader"
+          },
+          {
+            loader: "postcss-loader", // Run post css actions
+            options: {
+              plugins: loader => [precss, autoprefixer]
+            }
+          },
+          {
+            loader: "sass-loader"
+          }
+        ]
+      },
+      {
+        test: /\.html$/,
+        use: "html-loader"
+      },
       {
         test: /\.js$/,
-        exclude: /node_modules/,
-        loaders: ['babel']
+        exclude: /(node_modules)/,
+        use: "babel-loader"
       },
       {
-        test: /\.less$/,
-        loader: 'style!css!less'
+        test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              limit: 8192,
+              mimetype: "application/font-woff"
+            }
+          }
+        ]
       },
       {
-        test: /.*\/images\/.*/,
-        loader: 'url?name=./images/[name].[ext]'
+        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              limit: 8192,
+              mimetype: "application/octet-stream"
+            }
+          }
+        ]
       },
       {
-        test: /\.eot$|\.svg$|\.ttf$|\.woff$|\.woff2$/,
-        loader: 'url?name=./fonts/[name].[ext]'
+        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
+        use: "file-loader"
       },
       {
-        test: /\.md$/,
-        loader: 'html!markdown'
+        test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              limit: 8192,
+              mimetype: "image/svg"
+            }
+          }
+        ]
       },
       {
-        test: /\.json$/,
-        loader: 'json?name=[name].[ext]'
+        test: /\.(png|jpg|jpeg)$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              limit: 8192
+            }
+          }
+        ]
+      },
+      {
+        test: /bootstrap\/js\//,
+        use: "imports-loader?$-jquery"
       }
     ]
-  }
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      title: "BayCare HealthNav",
+      template: "index.ejs"
+    })
+  ],
+  mode: "development"
 };
-
-if (process.env.NODE_ENV === 'production') {
-  webpackConfig.plugins = webpackConfig.plugins.concat(
-    new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.UglifyJsPlugin()
-  );
-  webpackConfig.output.path = `${__dirname}/build/prod`;
-}
-
-module.exports = webpackConfig;
